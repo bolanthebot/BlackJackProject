@@ -65,11 +65,15 @@ public class main{
                     while((!stand)&&(!bust)){
                         print_table(players,dealer);
                         Scanner sc2=new Scanner(System.in);
-                        System.out.println(player.name+": Would you like to (1) hit, (2) stand, (3) double,(4) split");
+                        System.out.println(player.name+": Would you like to (1) hit, (2) stand, (3) double,(4) split wage:" + player.getWager());
                         String choice = sc2.nextLine();
-                        if(choice.equals("hit")){player.addCard(deck.drawCard());}
-                        if(choice.equals("stand")){stand=true;}
-                        if(player.getHandVal()>21){bust=true;}
+                        if(choice.equals("hit")) {player.addCard(deck.drawCard());;}
+                        if(choice.equals("stand")) {stand=true;}
+                        
+                        // player doubles wager and stands
+                        if(choice.equals("double")) {player.addCard(deck.drawCard()); player.setWager(player.getWager()*2); stand=true;}
+                      
+                        if(player.getHandVal()>21){bust=true; System.out.println(player.name + " busts " + player.printHand());}
                     }
                 }
                 //dealer bust
@@ -80,15 +84,19 @@ public class main{
                     dealer.addCard(deck.drawCard());
                     if(dealer.getHandVal()>=16||dealer.getHandVal()==-1){db=true;}
                 }
+                System.out.println("dealer stops at " + dealer.getHandVal() + " " + dealer.printHand());
 
                 for(Player player : players){
-                    if(player.getHandVal()>dealer.getHandVal()){
+                    if(player.getHandVal()<dealer.getHandVal()){
+                        System.out.println(player.name + " loses. -" + player.getWager());
                         player.loseMoney(player.getWager());
                     }
-                    if(player.getHandVal()<dealer.getHandVal()){
+                    if(player.getHandVal()>dealer.getHandVal()){
+                        System.out.println(player.name + " wins. +" + player.getWager());
                         player.addMoney(player.getWager()*2);
                     }
                     if(player.getHandVal()==dealer.getHandVal()){
+                        System.out.println(player.name + " pushes");
                         player.addMoney(player.getWager());
                     }
                     player.clearHand();
