@@ -26,6 +26,8 @@ public class Player {
 
     protected void addMoney(double m){money=money+m;}
     protected void loseMoney(double m){money=money-m;}
+    protected double getMoney(){return money;}
+
     protected double getWager(){return wager;}
     protected void setWager(double w){wager=w;}
 

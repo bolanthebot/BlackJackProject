@@ -36,9 +36,18 @@ public class main{
             //ask for wager
             for(Player player : players){
                 Scanner sc3=new Scanner(System.in);
-                System.out.println("How much would you like to wager?");
-                double w = sc3.nextDouble();
-                player.setWager(w);
+
+                // Can't bet more than balance
+                while (true){
+                    System.out.println(player.name + ": Balance: " + player.getMoney());
+                    System.out.println(player.name + ": how much would you like to wager?");
+                    double w = sc3.nextDouble();
+                    if (w <= player.getMoney()) {
+                        player.setWager(w);
+                        break;
+                    }
+                    System.out.println(player.name + ": not enough money");
+                }
             }
             //Start of round
             int round = 0;
@@ -65,12 +74,13 @@ public class main{
                     while((!stand)&&(!bust)){
                         print_table(players,dealer);
                         Scanner sc2=new Scanner(System.in);
-                        System.out.println(player.name+": Would you like to (1) hit, (2) stand, (3) double,(4) split wage:" + player.getWager());
+                        System.out.println(player.name+": Would you like to (1) hit, (2) stand, (3) double,(4) split");
                         String choice = sc2.nextLine();
                         if(choice.equals("hit")) {player.addCard(deck.drawCard());;}
                         if(choice.equals("stand")) {stand=true;}
                         
                         // player doubles wager and stands
+                        // TODO check if balance is high enough to double
                         if(choice.equals("double")) {player.addCard(deck.drawCard()); player.setWager(player.getWager()*2); stand=true;}
                       
                         if(player.getHandVal()>21){bust=true; System.out.println(player.name + " busts " + player.printHand());}
@@ -87,17 +97,30 @@ public class main{
                 System.out.println("dealer stops at " + dealer.getHandVal() + " " + dealer.printHand());
 
                 for(Player player : players){
+                    // rn if player busted previously they still win
+                    // TODO: 
+                    // - make the player lose if they busted
+                    //   - should be done before dealer gets his cards
+                    //   - maybe through a new variable in player.java?
+                    // - also ace always = 11?
+
+                    if (dealer.getHandVal()>21) {
+                        System.out.println("Dealer bust. " + player.name + " wins. +" + player.getWager());
+                        player.addMoney(player.getWager());
+                    }
+
                     if(player.getHandVal()<dealer.getHandVal()){
                         System.out.println(player.name + " loses. -" + player.getWager());
                         player.loseMoney(player.getWager());
                     }
                     if(player.getHandVal()>dealer.getHandVal()){
                         System.out.println(player.name + " wins. +" + player.getWager());
-                        player.addMoney(player.getWager()*2);
+                        player.addMoney(player.getWager());
                     }
                     if(player.getHandVal()==dealer.getHandVal()){
                         System.out.println(player.name + " pushes");
-                        player.addMoney(player.getWager());
+                        // as of right now, wagering doesn't take from total money
+                        // player.addMoney(player.getWager());
                     }
                     player.clearHand();
                 }
