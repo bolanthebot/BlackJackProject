@@ -3,7 +3,7 @@ public class Player {
     private List<Card> hand;
     private double money;
     protected String name;
-    protected double wager;
+    private double wager;
 
     public Player(String name){
         hand=new ArrayList<>();

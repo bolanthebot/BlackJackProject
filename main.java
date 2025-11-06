@@ -26,7 +26,6 @@ public class main{
             }
     }
 
-
     public static void main(String[] args) {
         Deck deck=new Deck();
         List<Player> players = new ArrayList<>();
@@ -34,6 +33,13 @@ public class main{
         initGame(players);
 
         while(true){
+            //ask for wager
+            for(Player player : players){
+                Scanner sc3=new Scanner(System.in);
+                System.out.println("How much would you like to wager?");
+                double w = sc3.nextDouble();
+                player.setWager(w);
+            }
             //Start of round
             int round = 0;
             Player dealer=new Player("dealer");
@@ -66,6 +72,7 @@ public class main{
                         if(player.getHandVal()>21){bust=true;}
                     }
                 }
+                //dealer bust
                 boolean db=false;
                 if(dealer.getHandVal()>=16){db=true;}
                 
