@@ -20,4 +20,9 @@ public class Card {
     public int getC() {
         return count;
     }
+
+    @Override
+    public String toString() {
+        return rank+"_"+getSuit();
+    }
 }

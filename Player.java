@@ -9,7 +9,6 @@ public class Player {
         hand=new ArrayList<>();
         this.money=100.0;
         this.name=name;
-        this.wager=wager;
     }
 
     protected int getHandVal(){
@@ -33,7 +32,7 @@ public class Player {
 
     protected String printHand(){
         String h="";
-        for(Card card : hand){h+=card.getRank();h+=",";}
+        for(Card card : hand){h+=card;h+=",";}
         //h=h.substring(0,h.length()-1);
         return h;
 
