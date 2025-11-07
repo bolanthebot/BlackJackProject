@@ -22,4 +22,16 @@ public enum Rank {
                 throw new IllegalArgumentException("Unknown rank: " + this);
         }
     }
+
+    public int getCount() {
+        int value = this.getValue();
+        if (value < 7) {
+            return 1;
+        } else if (value < 10) {
+            return 0;
+        } else {
+            return -1;
+        }
+
+    }
 }

@@ -1,12 +1,12 @@
 public class Card {
     private Rank rank;
     private Suit suit;
-    private int count;
+    protected int count;
 
     public Card(Suit suit,Rank rank){
         this.suit=suit;
         this.rank=rank;
-
+        this.count=rank.getCount();
     }
 
     public Suit getSuit() {
@@ -17,8 +17,8 @@ public class Card {
         return rank;
     }
 
-    public int getC() {
-        return count;
+    public int getValue() {
+        return rank.getValue();
     }
 
     @Override
