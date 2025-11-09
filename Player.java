@@ -4,11 +4,15 @@ public class Player {
     private double money;
     protected String name;
     private double wager;
+    private boolean isSplitPlayer;
+    private List<Player> splits;
 
     public Player(String name){
         hand=new ArrayList<>();
         this.money=100.0;
         this.name=name;
+        this.isSplitPlayer=false;
+        this.splits=new ArrayList<>();
     }
 
     protected int getHandVal(){
@@ -18,6 +22,9 @@ public class Player {
         }
         return total;
     }
+
+    protected boolean IsSplitPlayer(){return isSplitPlayer;}
+    protected void setSplitPlayer(boolean tf){isSplitPlayer=tf;}
 
     protected void addCard(Card card){
         hand.add(card);
@@ -29,6 +36,8 @@ public class Player {
 
     protected double getWager(){return wager;}
     protected void setWager(double w){wager=w;}
+
+    protected List<Card> getHand(){return hand;}
 
     protected String printHand(){
         String h="";

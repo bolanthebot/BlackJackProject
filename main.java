@@ -74,6 +74,8 @@ public class main{
                     boolean stand=false;
                     boolean bust=false;
                     int turn=1;
+                    //amount of splits for naming purposes 
+                    Integer i=0;
                     while((!stand)&&(!bust)){
                         print_table(players,dealer);
                         Scanner sc2=new Scanner(System.in);
@@ -93,6 +95,23 @@ public class main{
                                 player.setWager(player.getWager()*2); 
                                 stand=true;}
                         }
+                        if(choice.equals("split")){
+                            if(turn!=1){System.out.println("Can only split on turn 1");}
+                            else if(player.getHand().get(0).getRank()!=player.getHand().get(1).getRank()){
+                                System.out.println("Have to be same card rank");
+                            }
+                            else if(player.getWager()>player.getMoney()){
+                                System.out.println("Not enough Money to split");
+                            }
+                            else{
+                                //Creates a split player and adds to og players splitlist
+                                String n=player.name+i.toString();
+                                Player splitplayer = new Player(n);
+                                splitplayer.setSplitPlayer(true);
+                                player.addSplitPlayer(splitplayer);
+                                i++;
+                            }
+                        }
                         if(player.getHandVal()>21){bust=true; System.out.println(player.name + " busts " + player.printHand());}
                     }
                 }
@@ -109,12 +128,8 @@ public class main{
                 System.out.println("dealer stops at " + dealer.getHandVal() + " " + dealer.printHand());
 
                 for(Player player : players){
-                    // rn if player busted previously they still win
                     // TODO: 
-                    // - make the player lose if they busted
-                    //   - should be done before dealer gets his cards
-                    //   - maybe through a new variable in player.java?
-                    // - also ace always = 11?
+                    // ace always = 11?
 
                     if (dealer.getHandVal()>21) {
                         if(player.getHandVal()<=21){
