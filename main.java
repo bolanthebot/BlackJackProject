@@ -71,6 +71,7 @@ public class main{
                     //TODO add split function
                     boolean stand=false;
                     boolean bust=false;
+                    int turn=1;
                     while((!stand)&&(!bust)){
                         print_table(players,dealer);
                         Scanner sc2=new Scanner(System.in);
@@ -80,9 +81,16 @@ public class main{
                         if(choice.equals("stand")) {stand=true;}
                         
                         // player doubles wager and stands
-                        // TODO check if balance is high enough to double
-                        if(choice.equals("double")) {player.addCard(deck.drawCard()); player.setWager(player.getWager()*2); stand=true;}
-                      
+                        if(choice.equals("double")) {
+                            if(turn!=1){System.out.println("Can only double on turn 1");}
+                            else if(player.getWager()*2<player.getMoney()){
+                                System.out.println("Not enough Money to double");
+                            }
+                            else{
+                                player.addCard(deck.drawCard()); 
+                                player.setWager(player.getWager()*2); 
+                                stand=true;}
+                        }
                         if(player.getHandVal()>21){bust=true; System.out.println(player.name + " busts " + player.printHand());}
                     }
                 }
