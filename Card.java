@@ -1,7 +1,7 @@
 public class Card {
     private Rank rank;
     private Suit suit;
-    protected int count;
+    public final int count;
 
     public Card(Suit suit,Rank rank){
         this.suit=suit;
