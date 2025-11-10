@@ -55,33 +55,42 @@ public class main{
             int round = 0;
             Player dealer=new Player("dealer");
                 if(round==0){
-                    for(int i=0;i<players.size();i++){
-                        players.get(i).addCard(deck.drawCard());
-                        print_table(players,dealer);
+                    for(Player player : players){
+                        player.addHand();
+                        for(Hand hand : player.getHands()) {
+                            hand.addCard(deck.drawCard());
+                            print_table(players,dealer);
+                        }
                     }
-                    dealer.addCard(deck.drawCard());
+                    dealer.addHand(); // dealer gets first and only hand
+                    dealer.getFirstHand().addCard(deck.drawCard());
                     
-                    for(int i=0;i<players.size();i++){
-                        players.get(i).addCard(deck.drawCard());
-                        print_table(players,dealer);
+                    for(Player player : players){
+                        for(Hand hand : player.getHands()) {
+                            hand.addCard(deck.drawCard());
+                            print_table(players,dealer);
+                        }
                     }
-                    dealer.addCard(deck.drawCard());
+                    dealer.getFirstHand().addCard(deck.drawCard());
                 }
 
                 //Go through every player until stand or bust
                 for(Player player : players){
-                    //TODO add split function
+                    ListIterator<Hand> it = player.getHands().listIterator(); // to modify list during iteration
+                    while (it.hasNext()) {
+                    Hand hand = it.next();
                     boolean stand=false;
                     boolean bust=false;
                     int turn=1;
                     //amount of splits for naming purposes 
                     Integer i=0;
+
                     while((!stand)&&(!bust)){
                         print_table(players,dealer);
                         Scanner sc2=new Scanner(System.in);
                         System.out.println(player.name+": Would you like to (1) hit, (2) stand, (3) double,(4) split");
                         String choice = sc2.nextLine();
-                        if(choice.equals("hit")) {player.addCard(deck.drawCard());;}
+                        if(choice.equals("hit")) {hand.addCard(deck.drawCard());;}
                         if(choice.equals("stand")) {stand=true;}
                         
                         // player doubles wager and stands
@@ -91,67 +100,70 @@ public class main{
                                 System.out.println("Not enough Money to double");
                             }
                             else{
-                                player.addCard(deck.drawCard()); 
+                                hand.addCard(deck.drawCard()); 
                                 player.setWager(player.getWager()*2); 
                                 stand=true;}
                         }
+                        
+                        // split logic
                         if(choice.equals("split")){
                             if(turn!=1){System.out.println("Can only split on turn 1");}
-                            else if(player.getHand().get(0).getRank()!=player.getHand().get(1).getRank()){
+                            else if(hand.getHand().get(0).getRank()!=hand.getHand().get(1).getRank()){
                                 System.out.println("Have to be same card rank");
                             }
                             else if(player.getWager()>player.getMoney()){
                                 System.out.println("Not enough Money to split");
                             }
                             else{
-                                //Creates a split player and adds to og players splitlist
-                                String n=player.name+i.toString();
-                                Player splitplayer = new Player(n);
-                                splitplayer.setSplitPlayer(true);
-                                player.addSplitPlayer(splitplayer);
+                                // some weird iterator stuff I had to do to iterate over newly added items
+                                it.add(new Hand(hand.handSplit(), deck.drawCard()));
+                                it.previous();
+                                hand.addCard(deck.drawCard());
                                 i++;
                             }
                         }
-                        if(player.getHandVal()>21){bust=true; System.out.println(player.name + " busts " + player.printHand());}
+                        if(hand.getHandVal()>21){bust=true; System.out.println(player.name + " busts " + player.printHand());}
                     }
-                }
+                } }
                 //dealer bust
                 boolean db=false;
                 //dealer stand
                 boolean ds=false;
-                if(dealer.getHandVal()>=16&&dealer.getHandVal()<=21){ds=true;}
+                if(dealer.getFirstHand().getHandVal()>=16&&dealer.getFirstHand().getHandVal()<=21){ds=true;}
                 
                 while(!db&&!ds){
-                    dealer.addCard(deck.drawCard());
-                    if(dealer.getHandVal()>=16||dealer.getHandVal()==-1){db=true;}
+                    dealer.getFirstHand().addCard(deck.drawCard());
+                    if(dealer.getFirstHand().getHandVal()>=16||dealer.getFirstHand().getHandVal()==-1){db=true;}
                 }
-                System.out.println("dealer stops at " + dealer.getHandVal() + " " + dealer.printHand());
+                System.out.println("dealer stops at " + dealer.getFirstHand().getHandVal() + " " + dealer.printHand());
 
                 for(Player player : players){
+                    for(Hand hand : player.getHands()) {
                     // TODO: 
                     // ace always = 11?
 
-                    if (dealer.getHandVal()>21) {
-                        if(player.getHandVal()<=21){
+                    if (dealer.getFirstHand().getHandVal()>21) {
+                        if(hand.getHandVal()<=21){
                             System.out.println("Dealer bust. " + player.name + " wins. +" + player.getWager());
                             player.addMoney(player.getWager());
                         }
                     }
 
-                    else if(player.getHandVal()<dealer.getHandVal()){
+                    else if(hand.getHandVal()<dealer.getFirstHand().getHandVal()){
                         System.out.println(player.name + " loses. -" + player.getWager());
                     }
-                    else if(player.getHandVal()>dealer.getHandVal()&&player.getHandVal()<=21){
+                    else if(hand.getHandVal()>dealer.getFirstHand().getHandVal()&&hand.getHandVal()<=21){
                         System.out.println(player.name + " wins. +" + player.getWager());
                         player.addMoney(player.getWager()*2);
                     }
-                    else if(player.getHandVal()==dealer.getHandVal()){
+                    else if(hand.getHandVal()==dealer.getFirstHand().getHandVal()){
                         System.out.println(player.name + " pushes");
                         player.addMoney(player.getWager());
                     }
-                    player.clearHand();
-                }
-                dealer.clearHand();
+                    
+                } player.clearHands();
+            }
+                dealer.clearHands();
 
             round++; 
         }

@@ -1,33 +1,14 @@
 import java.util.*;
 public class Player {
-    private List<Card> hand;
+    private List<Hand> hands;
     private double money;
     protected String name;
     private double wager;
-    private boolean isSplitPlayer;
-    private List<Player> splits;
 
     public Player(String name){
-        hand=new ArrayList<>();
+        hands=new ArrayList<>();
         this.money=100.0;
         this.name=name;
-        this.isSplitPlayer=false;
-        this.splits=new ArrayList<>();
-    }
-
-    protected int getHandVal(){
-        int total=0;
-        for(Card card : hand){
-            total+=card.getRank().getValue();
-        }
-        return total;
-    }
-
-    protected boolean IsSplitPlayer(){return isSplitPlayer;}
-    protected void setSplitPlayer(boolean tf){isSplitPlayer=tf;}
-
-    protected void addCard(Card card){
-        hand.add(card);
     }
 
     protected void addMoney(double m){money=money+m;}
@@ -37,14 +18,16 @@ public class Player {
     protected double getWager(){return wager;}
     protected void setWager(double w){wager=w;}
 
-    protected List<Card> getHand(){return hand;}
+    protected List<Hand> getHands(){return hands;}
+    protected Hand getFirstHand(){return hands.get(0);} // for dealer
+
+    protected void addHand() {hands.add(new Hand());}
 
     protected String printHand(){
         String h="";
-        for(Card card : hand){h+=card;h+=",";}
-        //h=h.substring(0,h.length()-1);
+        for(Hand hand : hands){h+=hand;h+=";";}
         return h;
-
     }
-    protected void clearHand(){hand.clear();}
+
+    protected void clearHands(){hands.clear();}
 }
