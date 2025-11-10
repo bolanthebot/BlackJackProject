@@ -2,7 +2,7 @@ import java.util.*;
 public class Player {
     private List<Hand> hands;
     private double money;
-    protected String name;
+    protected final String name;
     private double wager;
 
     public Player(String name){
