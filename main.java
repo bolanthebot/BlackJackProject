@@ -67,8 +67,7 @@ public class main {
                     
                     for (Hand hand : player.getHands()) {
                         hand.addCard(deck.drawCard());
-                        // print_table(players,dealer);
-                        System.out.println(hand);
+                        print_table(players,dealer);
                     }
                 }
                 dealer.addHand(); // dealer gets first and only hand
@@ -80,8 +79,7 @@ public class main {
                     System.out.println(player.name);
                     for (Hand hand : player.getHands()) {
                         hand.addCard(deck.drawCard());
-                        System.out.println(hand);
-                        // print_table(players,dealer);
+                        print_table(players,dealer);
                     }
                 }
                 dealer.getFirstHand().addCard(deck.drawCard());
@@ -105,12 +103,10 @@ public class main {
                     while ((!stand) && (!bust)) {
                         print_table(players, dealer);
                         Scanner sc2 = new Scanner(System.in);
-                        System.out
-                                .println(player.name + ": Would you like to (1) hit, (2) stand, (3) double,(4) split");
+                        System.out.println(player.name + ": Would you like to (1) hit, (2) stand, (3) double,(4) split");
                         String choice = sc2.nextLine();
                         if (choice.equals("hit")) {
                             hand.addCard(deck.drawCard());
-                            ;
                         }
                         if (choice.equals("stand")) {
                             stand = true;
