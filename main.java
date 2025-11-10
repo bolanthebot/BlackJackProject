@@ -2,12 +2,12 @@ import java.util.*;
 
 public class main {
     static void print_table(List<Player> Plist, Player dealer) {
+        String d = dealer.printHand();
         for (Player p : Plist) {
             String h = p.printHand();
-            String d = dealer.printHand();
             System.out.println(p.name + " cards: " + h);
-            System.out.println("dealer has: " + d);
         }
+        System.out.println("dealer has: " + d);
     }
 
     // Fills list of players with players
@@ -89,11 +89,10 @@ public class main {
             }
 
             // Go through every player until stand or bust
-            int turn = 0;
             for (Player player : players) {
-                turn++;
                 ListIterator<Hand> it = player.getHands().listIterator(); // to modify list during iteration
                 while (it.hasNext()) {
+                    int turn = 0;
                     Hand hand = it.next();
                     boolean stand = false;
                     boolean bust = false;
@@ -101,6 +100,7 @@ public class main {
                     Integer i = 0;
 
                     while ((!stand) && (!bust)) {
+                        turn++;
                         print_table(players, dealer);
                         Scanner sc2 = new Scanner(System.in);
                         System.out.println(player.name + ": Would you like to (1) hit, (2) stand, (3) double,(4) split");
@@ -141,6 +141,8 @@ public class main {
                                 i++;
                             }
                         }
+
+                        // bust logic
                         if (hand.getHandVal() > 21) {
                             bust = true;
                             System.out.println(player.name + " busts " + player.printHand());
