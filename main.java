@@ -73,7 +73,7 @@ public class main {
                 dealer.addHand(); // dealer gets first and only hand
                 dealer.getFirstHand().addCard(deck.drawCard());
                 System.out.println("Dealer: ");
-                System.out.println(dealer.getHands());
+                System.out.println(dealer.getHands().get(0));
 
                 for (Player player : players) {
                     System.out.println(player.name);
@@ -120,6 +120,7 @@ public class main {
                                 System.out.println("Not enough Money to double");
                             } else {
                                 hand.addCard(deck.drawCard());
+                                player.loseMoney(player.getWager());
                                 player.setWager(player.getWager() * 2);
                                 stand = true;
                             }
