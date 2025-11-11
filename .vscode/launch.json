@@ -6,11 +6,24 @@
     "configurations": [
         {
             "type": "java",
+            "name": "oldmain",
+            "request": "launch",
+            "mainClass": "src.BlackJackProject.oldmain",
+            "projectName": "BlackJackProject_2ad2aadb"
+        },
+        {
+            "type": "java",
+            "name": "main",
+            "request": "launch",
+            "mainClass": "main",
+            "projectName": "BlackJackProject_2ad2aadb"
+        },
+        {
+            "type": "java",
             "name": "Launch app",
             "request": "launch",
             "mainClass": "src.BlackJackProject.Main",
-            //Change file path to your file path
-            "vmArgs": "--module-path \"C:/Program Files/Java/javafx-sdk-25.0.1/lib\" --add-modules javafx.controls,javafx.fxml",
+            "vmArgs": "--module-path \"C:/Program Files/Java/javafx-sdk-25.0.1/lib\" --add-modules javafx.controls,javafx.fxml"
         }
     ]
 }

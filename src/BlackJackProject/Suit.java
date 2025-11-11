@@ -5,10 +5,10 @@ public enum Suit {
     @Override
     public String toString() {
         switch (this) {
-            case HEARTS:   return "H";
-            case DIAMONDS: return "D";
-            case CLUBS:    return "C";
-            case SPADES:   return "S";
+            case HEARTS:   return "hearts";
+            case DIAMONDS: return "diamonds";
+            case CLUBS:    return "clubs";
+            case SPADES:   return "spades";
             default:       return super.toString();
         }
     }

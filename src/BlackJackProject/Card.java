@@ -25,6 +25,6 @@ public class Card {
 
     @Override
     public String toString() {
-        return rank+"_"+getSuit();
+        return rank.toNum()+"_of_"+getSuit();
     }
 }
