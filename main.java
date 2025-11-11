@@ -176,7 +176,7 @@ public class main {
                         if (hand.getHandVal() <= 21) {
                             System.out.println(
                                     "Dealer bust. " + player.name + " wins " + hand + "; +" + player.getWager());
-                            player.addMoney(player.getWager());
+                            player.addMoney(player.getWager()*2);
                         }
                     }
 
