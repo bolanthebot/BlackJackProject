@@ -3,6 +3,7 @@ package src.BlackJackProject;
 import javafx.animation.*;
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
@@ -18,14 +19,22 @@ public class Main extends Application {
 
     private Pane table;         // where card images are placed
     private VBox controls;      // buttons and info
-    private TextArea log;       // output messages
+    private Label messageLabel;
+    private StackPane tableContainer;
 
-    private Button hitBtn, standBtn, dealBtn;
+
+    private Button hitBtn, standBtn, dealBtn, splitBtn, doubleBtn;
+    private int wager = 10;
+    private Label wagerLabel;
+    private Button increaseBtn;
+    private Button decreaseBtn;
+    private Button confirmWagerBtn;
     private int currentPlayer = 0;
     private Map<Card, ImageView> cardImages = new HashMap<>();
 
     // starting deck area (for animation start position)
     private final double deckX = 400, deckY = 80;
+
 
     @Override
     public void start(Stage stage) {
@@ -40,18 +49,57 @@ public class Main extends Application {
         table.setPrefSize(800, 400);
         table.setStyle("-fx-background-color: darkgreen;");
 
+        // Message label overlay
+        messageLabel = new Label();
+        messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;");
+        messageLabel.setOpacity(0);
+
+        // StackPane to overlay label on top of table
+        tableContainer = new StackPane(table, messageLabel);
+        tableContainer.setPrefSize(800, 400);
+        root.setCenter(tableContainer);
+
+        table.setPrefSize(800, 400);
+        table.setStyle("-fx-background-color: darkgreen;");
+
         hitBtn = new Button("Hit");
         standBtn = new Button("Stand");
         dealBtn = new Button("Deal");
+        splitBtn=new Button("Split");
+        doubleBtn=new Button("Double");
 
-        log = new TextArea();
-        log.setEditable(false);
-        log.setPrefHeight(150);
+        // --- Wager Controls ---
+        Label wagerText = new Label("Wager: $");
+        wagerLabel = new Label(String.valueOf(wager));
+        wagerLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: white; -fx-font-size: 18;");
 
-        controls = new VBox(10, new HBox(10, hitBtn, standBtn, dealBtn), log);
+        increaseBtn = new Button("+");
+        decreaseBtn = new Button("-");
+        confirmWagerBtn = new Button("Confirm Bet");
+
+        increaseBtn.setOnAction(e -> {
+            wager += 5;
+            updateWagerLabel();
+        });
+
+        decreaseBtn.setOnAction(e -> {
+            if (wager > 10) {
+                wager -= 5;
+                updateWagerLabel();
+            }
+        });
+
+        confirmWagerBtn.setOnAction(e -> confirmWager());
+        HBox wagerBox = new HBox(10, wagerText, wagerLabel, decreaseBtn, increaseBtn, confirmWagerBtn);
+        wagerBox.setAlignment(Pos.CENTER);
+        wagerBox.setPadding(new Insets(10));
+        wagerBox.setStyle("-fx-background-color: darkgreen;");
+
+        controls = new VBox(10, wagerBox, new HBox(10, hitBtn, standBtn, dealBtn, splitBtn, doubleBtn));
+        controls.setAlignment(Pos.CENTER);
+
         controls.setPadding(new Insets(10));
 
-        root.setCenter(table);
         root.setBottom(controls);
 
         Scene scene = new Scene(root, 800, 600);
@@ -63,8 +111,11 @@ public class Main extends Application {
         dealBtn.setOnAction(e -> startRound());
         hitBtn.setOnAction(e -> playerHit());
         standBtn.setOnAction(e -> playerStand());
+        doubleBtn.setOnAction(e -> playerDouble());
+        //splitBtn.setOnAction(e -> playerSplit());
 
         setButtonsEnabled(false);
+        
     }
 
     private void startRound() {
@@ -72,13 +123,12 @@ public class Main extends Application {
         deck.shuffle();
         dealer.clearHands();
         for (Player p : players) p.clearHands();
-
+        
         dealer.addHand();
         for (Player p : players) p.addHand();
 
         setButtonsEnabled(false);
-        log.clear();
-        log.appendText("Starting new round...\n");
+        showMessage("Starting new round...");
 
         // Sequentially deal cards to each player and dealer
         SequentialTransition dealAnim = new SequentialTransition();
@@ -97,11 +147,51 @@ public class Main extends Application {
 
         dealAnim.setOnFinished(e -> {
             setButtonsEnabled(true);
-            log.appendText("Your turn!\n");
+            showMessage("Your turn!");
         });
 
         dealAnim.play();
     }
+
+    private void showMessage(String text) {
+        messageLabel.setText(text);
+        messageLabel.setOpacity(0);
+
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(400), messageLabel);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+
+        PauseTransition stay = new PauseTransition(Duration.seconds(1.5));
+
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(600), messageLabel);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+
+        SequentialTransition seq = new SequentialTransition(fadeIn, stay, fadeOut);
+        seq.play();
+    }
+
+    private void updateWagerLabel() {
+        wagerLabel.setText("$" + wager);
+    }
+
+    private void confirmWager() {
+        showMessage("Wager confirmed: $" + wager);
+        increaseBtn.setDisable(true);
+        decreaseBtn.setDisable(true);
+        confirmWagerBtn.setDisable(true);
+
+        // Now start round or enable "Deal" button
+        // e.g. dealBtn.setDisable(false);
+    }
+
+    private void resetWagerControls() {
+    increaseBtn.setDisable(false);
+    decreaseBtn.setDisable(false);
+    confirmWagerBtn.setDisable(false);
+    }
+
+
 
     private void playerHit() {
         Player player = players.get(currentPlayer);
@@ -114,22 +204,44 @@ public class Main extends Application {
         ).play();
 
         int val = player.getFirstHand().getHandVal();
-        log.appendText("You drew " + card + " (total: " + val + ")\n");
+        showMessage("You drew " + card + " (total: " + val + ")");
 
         if (val > 21) {
-            log.appendText("Busted!\n");
+            showMessage("Busted!");
+            setButtonsEnabled(false);
+        }
+    }
+
+    private void playerDouble(){
+        Player player = players.get(currentPlayer);
+        Card card = deck.drawCard();
+        player.getFirstHand().addCard(card);
+
+        if(player.getWager()>player.getMoney()){
+                setButtonsEnabled(false);
+                dealerPlay();
+                return;
+        }
+
+        dealCardAnimation(card,playerCardX(player),playerCardY(player, player.getFirstHand().getHand().size() - 1)).play();
+
+        int val = player.getFirstHand().getHandVal();
+        showMessage("You drew " + card + " (total: " + val + ")");
+
+        if (val > 21) {
+            showMessage("Busted!");
             setButtonsEnabled(false);
         }
     }
 
     private void playerStand() {
-        log.appendText("You stand.\n");
+        showMessage("You stand.");
         setButtonsEnabled(false);
         dealerPlay();
     }
 
     private void dealerPlay() {
-        log.appendText("Dealer's turn...\n");
+        showMessage("Dealer's turn...");
         SequentialTransition dealerAnim = new SequentialTransition();
 
         while (dealer.getFirstHand().getHandVal() < 17) {
@@ -143,14 +255,18 @@ public class Main extends Application {
         dealerAnim.setOnFinished(e -> {
             int dealerVal = dealer.getFirstHand().getHandVal();
             int playerVal = players.get(0).getFirstHand().getHandVal();
-            log.appendText("Dealer total: " + dealerVal + "\n");
-            log.appendText("Your total: " + playerVal + "\n");
-            if (dealerVal > 21 || playerVal > dealerVal && playerVal <= 21)
-                log.appendText("You win!\n");
-            else if (dealerVal == playerVal)
-                log.appendText("Push.\n");
+            showMessage("Dealer total: " + dealerVal);
+            showMessage("Your total: " + playerVal);
+            if (dealerVal > 21 || playerVal > dealerVal && playerVal <= 21){
+                showMessage("You win!");
+                Player p=players.get(0);
+                p.loseMoney(wager);
+            }
+            else if (dealerVal == playerVal){
+                showMessage("Push.");
+            }
             else
-                log.appendText("Dealer wins.\n");
+                showMessage("Dealer wins.");
         });
 
         dealerAnim.play();
