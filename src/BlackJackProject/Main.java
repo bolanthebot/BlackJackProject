@@ -23,7 +23,7 @@ public class Main extends Application {
     private StackPane tableContainer;
 
 
-    private Button hitBtn, standBtn, dealBtn, splitBtn, doubleBtn;
+    private Button hitBtn, standBtn, splitBtn, doubleBtn;
     private int wager = 10;
     private Label wagerLabel;
     private Button increaseBtn;
@@ -42,7 +42,7 @@ public class Main extends Application {
         dealer = new Player("Dealer");
         players = new ArrayList<>();
         players.add(new Player("Player"));
-
+        
         // GUI layout
         BorderPane root = new BorderPane();
         table = new Pane();
@@ -64,7 +64,6 @@ public class Main extends Application {
 
         hitBtn = new Button("Hit");
         standBtn = new Button("Stand");
-        dealBtn = new Button("Deal");
         splitBtn=new Button("Split");
         doubleBtn=new Button("Double");
 
@@ -90,12 +89,13 @@ public class Main extends Application {
         });
 
         confirmWagerBtn.setOnAction(e -> confirmWager());
+        confirmWagerBtn.setOnAction(e -> startRound());
         HBox wagerBox = new HBox(10, wagerText, wagerLabel, decreaseBtn, increaseBtn, confirmWagerBtn);
         wagerBox.setAlignment(Pos.CENTER);
         wagerBox.setPadding(new Insets(10));
         wagerBox.setStyle("-fx-background-color: darkgreen;");
 
-        controls = new VBox(10, wagerBox, new HBox(10, hitBtn, standBtn, dealBtn, splitBtn, doubleBtn));
+        controls = new VBox(10, wagerBox, new HBox(10, hitBtn, standBtn, splitBtn, doubleBtn));
         controls.setAlignment(Pos.CENTER);
 
         controls.setPadding(new Insets(10));
@@ -108,7 +108,6 @@ public class Main extends Application {
         stage.show();
 
         // button actions
-        dealBtn.setOnAction(e -> startRound());
         hitBtn.setOnAction(e -> playerHit());
         standBtn.setOnAction(e -> playerStand());
         doubleBtn.setOnAction(e -> playerDouble());
@@ -180,15 +179,12 @@ public class Main extends Application {
         increaseBtn.setDisable(true);
         decreaseBtn.setDisable(true);
         confirmWagerBtn.setDisable(true);
-
-        // Now start round or enable "Deal" button
-        // e.g. dealBtn.setDisable(false);
     }
 
     private void resetWagerControls() {
-    increaseBtn.setDisable(false);
-    decreaseBtn.setDisable(false);
-    confirmWagerBtn.setDisable(false);
+        increaseBtn.setDisable(false);
+        decreaseBtn.setDisable(false);
+        confirmWagerBtn.setDisable(false);
     }
 
 
@@ -222,7 +218,21 @@ public class Main extends Application {
                 dealerPlay();
                 return;
         }
-
+        int turn=1;
+        if (turn != 1) {
+            showMessage("Can only double on turn 1");
+            return;
+        } else if (player.getWager() > player.getMoney()) {
+            showMessage("Not enough Money to double");
+            return;
+        } else {
+            player.getHands().get(0).addCard(deck.drawCard());
+            player.loseMoney(player.getWager());
+            player.setWager(player.getWager() * 2);
+            setButtonsEnabled(false);
+            dealerPlay();
+            
+        }
         dealCardAnimation(card,playerCardX(player),playerCardY(player, player.getFirstHand().getHand().size() - 1)).play();
 
         int val = player.getFirstHand().getHandVal();
@@ -275,6 +285,8 @@ public class Main extends Application {
     private void setButtonsEnabled(boolean on) {
         hitBtn.setDisable(!on);
         standBtn.setDisable(!on);
+        doubleBtn.setDisable(!on);
+        splitBtn.setDisable(!on);
     }
 
     // 🔹 ANIMATION LOGIC BELOW 🔹
