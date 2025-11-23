@@ -101,7 +101,6 @@ public class Main extends Application{
         });
 
         confirmWagerBtn.setOnAction(e -> confirmWager());
-        confirmWagerBtn.setOnAction(e -> startRound());
         HBox wagerBox = new HBox(10, wagerText, wagerLabel, decreaseBtn, increaseBtn, confirmWagerBtn);
         wagerBox.setAlignment(Pos.CENTER);
         wagerBox.setPadding(new Insets(10));
@@ -230,7 +229,7 @@ public class Main extends Application{
             else
                 showMessage("Dealer wins.");
         });
-
+        resetWagerControls();
         dealerAnim.play();
     }
 
@@ -253,14 +252,13 @@ public class Main extends Application{
         if (val > 21) {
             showMessage("Busted!");
             setButtonsEnabled(false);
-            nextHand();
+            dealerPlay();
         }
     }
 
     private void nextHand(){
         if(players.get(currentPlayer).getHands().size()>players.get(currentPlayer).getCurrHandIn()){
             players.get(currentPlayer).nextHand();
-            setButtonsEnabled(true);
         }
     }
 
@@ -300,7 +298,12 @@ public class Main extends Application{
     }
     //Done - may have to change disables
     private void confirmWager() {
-        showMessage("Wager confirmed: $" + wager);
+        if(players.get(0).getMoney()>=players.get(0).getWager()){
+            showMessage("Wager confirmed: $" + wager);
+            startRound();
+        }
+        showMessage("Not enough money");
+        
     }
     //Done
     private void resetWagerControls() {
