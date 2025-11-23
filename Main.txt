@@ -1,4 +1,4 @@
-package src.BlackJackProject;
+
 
 import javafx.animation.*;
 import javafx.application.Application;
@@ -16,11 +16,10 @@ import src.BlackJackProject.Player;
 
 import java.util.*;
 
-public class Main extends Application{
+public class Main extends Application {
     private Deck deck;
     private Player dealer;
     private List<Player> players;
-    private int currentHand;
 
     private Pane table;         // where card images are placed
     private VBox controls;      // buttons and info
@@ -36,22 +35,17 @@ public class Main extends Application{
     private Button confirmWagerBtn;
     private int currentPlayer = 0;
     private Map<Card, ImageView> cardImages = new HashMap<>();
+
     // starting deck area (for animation start position)
     private final double deckX = 400, deckY = 80;
-    int turn;
 
 
-    @Override
+    //@Override
     public void start(Stage stage) {
-        turn=1;
         deck = new Deck();
         dealer = new Player("Dealer");
         players = new ArrayList<>();
         players.add(new Player("Player"));
-        players.add(new Player("BasicBot"));
-        players.add(new Player("SmartBot"));
-        players.add(new Player("CheaterBot"));
-        currentHand=0;
         
         // GUI layout
         BorderPane root = new BorderPane();
@@ -69,7 +63,6 @@ public class Main extends Application{
         tableContainer.setPrefSize(800, 400);
         root.setCenter(tableContainer);
         StackPane.setAlignment(messageLabel, Pos.TOP_LEFT);
-        //messageLabel.setPadding(new Insets(15));
 
         table.setPrefSize(800, 400);
         table.setStyle("-fx-background-color: darkgreen;");
@@ -79,7 +72,7 @@ public class Main extends Application{
         splitBtn=new Button("Split");
         doubleBtn=new Button("Double");
 
-        // --- Wager Controls ---
+        // --- Wager Controls --- 
         Label wagerText = new Label("Wager: $");
         wagerLabel = new Label(String.valueOf(wager));
         wagerLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: white; -fx-font-size: 18;");
@@ -128,12 +121,10 @@ public class Main extends Application{
         setButtonsEnabled(false);
     }
 
+    
     private void startRound() {
-        increaseBtn.setDisable(true);
-        decreaseBtn.setDisable(true);
-        confirmWagerBtn.setDisable(true);
-
         table.getChildren().clear();
+        deck.shuffle();
         dealer.clearHands();
         for (Player p : players) p.clearHands();
         
@@ -145,7 +136,7 @@ public class Main extends Application{
 
         // Sequentially deal cards to each player and dealer
         SequentialTransition dealAnim = new SequentialTransition();
-
+        
         for (int round = 0; round < 2; round++) {
             for (Player p : players) {
                 Card c = deck.drawCard();
@@ -166,6 +157,63 @@ public class Main extends Application{
         dealAnim.play();
     }
 
+    private void showMessage(String text) {
+        messageLabel.setText(text);
+        messageLabel.setOpacity(0);
+
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(400), messageLabel);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+
+        PauseTransition stay = new PauseTransition(Duration.seconds(1.5));
+
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(600), messageLabel);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+
+        SequentialTransition seq = new SequentialTransition(fadeIn, stay, fadeOut);
+        seq.play();
+    }
+
+    private void updateWagerLabel() {
+        wagerLabel.setText("$" + wager);
+    }
+
+    private void confirmWager() {
+        showMessage("Wager confirmed: $" + wager);
+        increaseBtn.setDisable(true);
+        decreaseBtn.setDisable(true);
+        confirmWagerBtn.setDisable(true);
+    }
+
+    private void resetWagerControls() {
+        increaseBtn.setDisable(false);
+        decreaseBtn.setDisable(false);
+        confirmWagerBtn.setDisable(false);
+    }
+
+
+
+    private void playerHit() {
+        Player player = players.get(currentPlayer);
+        Card card = deck.drawCard();
+        player.getFirstHand().addCard(card);
+
+        dealCardAnimation(card,
+                playerCardX(player),
+                playerCardY(player, player.getFirstHand().getHand().size() - 1)
+        ).play();
+
+        int val = player.getFirstHand().getHandVal();
+        showMessage("You drew " + card + " (total: " + val + ")");
+
+        if (val > 21) {
+            showMessage("Busted!");
+            setButtonsEnabled(false);
+        }
+    }
+
+
     private void playerDouble(){
         Player player = players.get(currentPlayer);
         Card card = deck.drawCard();
@@ -176,8 +224,8 @@ public class Main extends Application{
                 dealerPlay();
                 return;
         }
-        
-        if (player.getTurn() != 1) {
+        int turn=1;
+        if (turn != 1) {
             showMessage("Can only double on turn 1");
             return;
         } else if (player.getWager() > player.getMoney()) {
@@ -201,7 +249,13 @@ public class Main extends Application{
             setButtonsEnabled(false);
         }
     }
-    
+
+    private void playerStand() {
+        showMessage("You stand.");
+        setButtonsEnabled(false);
+        dealerPlay();
+    }
+
     private void dealerPlay() {
         showMessage("Dealer's turn...");
         SequentialTransition dealerAnim = new SequentialTransition();
@@ -234,81 +288,6 @@ public class Main extends Application{
         dealerAnim.play();
     }
 
-    private void playerStand() {
-        showMessage("You stand.");
-        setButtonsEnabled(false);
-        dealerPlay();
-    }
-    
-    private void playerHit() {
-        Player player = players.get(currentPlayer);
-        Card card = deck.drawCard();
-        player.getCurrHand().addCard(card);
-
-        dealCardAnimation(card, playerCardX(player), playerCardY(player, player.getFirstHand().getHand().size() - 1)).play();
-
-        int val = player.getCurrHand().getHandVal();
-        showMessage("You drew " + card + " (total: " + val + ")");
-
-        if (val > 21) {
-            showMessage("Busted!");
-            setButtonsEnabled(false);
-            nextHand();
-        }
-    }
-
-    private void nextHand(){
-        if(players.get(currentPlayer).getHands().size()>players.get(currentPlayer).getCurrHandIn()){
-            players.get(currentPlayer).nextHand();
-            setButtonsEnabled(true);
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //Done - could use tweaks
-    private void showMessage(String text) {
-        messageLabel.setText(text);
-        messageLabel.setOpacity(0);
-
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(400), messageLabel);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-
-        PauseTransition stay = new PauseTransition(Duration.seconds(1.5));
-
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(600), messageLabel);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-
-        SequentialTransition seq = new SequentialTransition(fadeIn, stay, fadeOut);
-        seq.play();
-    }
-    //Done
-    private void updateWagerLabel() {
-        wagerLabel.setText("$" + wager);
-    }
-    //Done - may have to change disables
-    private void confirmWager() {
-        showMessage("Wager confirmed: $" + wager);
-    }
-    //Done
-    private void resetWagerControls() {
-        increaseBtn.setDisable(false);
-        decreaseBtn.setDisable(false);
-        confirmWagerBtn.setDisable(false);
-    }
-    //Done
     private void setButtonsEnabled(boolean on) {
         hitBtn.setDisable(!on);
         standBtn.setDisable(!on);
@@ -316,7 +295,7 @@ public class Main extends Application{
         splitBtn.setDisable(!on);
     }
 
-    //Done - may need to impleemnt multiple player
+    // 🔹 ANIMATION LOGIC BELOW 🔹
     private Animation dealCardAnimation(Card card, double toX, double toY) {
         ImageView cardView = getCardImage(card);
         cardView.setLayoutX(deckX);
@@ -334,7 +313,7 @@ public class Main extends Application{
 
         return new ParallelTransition(move, fade);
     }
-    //Done
+
     private ImageView getCardImage(Card card) {
         String filename = card.toString().toLowerCase() + ".png";
         String path = "/PNG-cards-1.3/" + filename;
@@ -361,17 +340,10 @@ public class Main extends Application{
         return view;
     }
 
-    //
+
+    // 🔹 CARD PLACEMENT HELPERS 🔹
     private double playerCardX(Player p) {
-        if(p.name.equals("Player"))
-            return 500;
-        if(p.name.equals("BasicBot"))
-            return 350;
-        if(p.name.equals("SmartBot"))
-            return 200;
-        if(p.name.equals("CheaterBot"))
-            return 50;
-        return 0;
+        return 200;
     }
 
     private double playerCardY(Player p, int index) {

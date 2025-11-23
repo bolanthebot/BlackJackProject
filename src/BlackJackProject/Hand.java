@@ -17,8 +17,17 @@ public class Hand {
 
     protected int getHandVal(){
         int total=0;
+        int aceCount=0;
         for(Card card : hand){
             total+=card.getRank().getValue();
+            if (card.getRank() == Rank.ACE) {
+                aceCount++;
+        }
+        }
+        // If we bust and have Aces, convert them from 11 to 1
+        while (total > 21 && aceCount > 0) {
+            total -= 10;
+            aceCount--;
         }
         return total;
     }

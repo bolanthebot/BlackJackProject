@@ -5,11 +5,15 @@ public class Player {
     private double money;
     protected final String name;
     private double wager;
+    private int currHand;
+    private int turn;
 
     public Player(String name){
         hands=new ArrayList<>();
         this.money=100.0;
         this.name=name;
+        this.currHand=0;
+        turn =1;
     }
 
     protected void addMoney(double m){money=money+m;}
@@ -21,6 +25,10 @@ public class Player {
 
     protected List<Hand> getHands(){return hands;}
     protected Hand getFirstHand(){return hands.get(0);} // for dealer
+    protected Hand getCurrHand(){return hands.get(currHand);}
+    protected int getCurrHandIn(){return currHand;}
+    protected void nextHand(){currHand++;}
+    protected int getTurn(){return turn;}
 
     protected void addHand() {hands.add(new Hand());}
 
