@@ -31,7 +31,7 @@ public class Deck {
         return drawnCard;
     }
 
-    private void updateCount(Card c) {this.count += c.count;}
+    private void updateCount(Card c) {this.count += c.getCount();}
     private void resetCount() {count = 0;}
     public int getCount() {return count;}
 

@@ -218,16 +218,17 @@ public class Main extends Application{
             int playerVal = players.get(0).getFirstHand().getHandVal();
             showMessage("Dealer total: " + dealerVal);
             showMessage("Your total: " + playerVal);
-            if (dealerVal > 21 || playerVal > dealerVal && playerVal <= 21){
+            if (((dealerVal > 21) || (playerVal > dealerVal)) && playerVal <= 21){
                 showMessage("You win!");
                 Player p=players.get(0);
-                p.loseMoney(wager);
+                p.addMoney(wager);
             }
             else if (dealerVal == playerVal){
                 showMessage("Push.");
             }
             else
                 showMessage("Dealer wins.");
+            showMessage("Count: "+deck.getCount());
         });
         resetWagerControls();
         dealerAnim.play();
@@ -265,15 +266,6 @@ public class Main extends Application{
 
 
 
-
-
-
-
-
-
-
-
-
     //Done - could use tweaks
     private void showMessage(String text) {
         messageLabel.setText(text);
@@ -302,7 +294,8 @@ public class Main extends Application{
             showMessage("Wager confirmed: $" + wager);
             startRound();
         }
-        showMessage("Not enough money");
+        else{
+        showMessage("Not enough money");}
         
     }
     //Done
@@ -341,7 +334,6 @@ public class Main extends Application{
     private ImageView getCardImage(Card card) {
         String filename = card.toString().toLowerCase() + ".png";
         String path = "/PNG-cards-1.3/" + filename;
-        System.out.println("Loading: " + path);
 
         Image img;
         try {

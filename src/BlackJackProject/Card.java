@@ -3,7 +3,7 @@ package src.BlackJackProject;
 public class Card {
     private Rank rank;
     private Suit suit;
-    public final int count;
+    private final int count;
 
     public Card(Suit suit,Rank rank){
         this.suit=suit;
@@ -14,6 +14,8 @@ public class Card {
     public Suit getSuit() {
         return suit;
     }
+
+    public int getCount(){return count;}
 
     public Rank getRank() {
         return rank;
