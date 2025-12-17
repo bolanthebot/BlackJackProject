@@ -1,4 +1,6 @@
 package src.BlackJackProject;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import javafx.animation.*;
 import javafx.application.Application;
@@ -167,8 +169,6 @@ public class Main extends Application{
 
     private void playerDouble(){
         Player player = players.get(currentPlayer);
-        Card card = deck.drawCard();
-        player.getFirstHand().addCard(card);
 
         if(player.getWager()>player.getMoney()){
                 setButtonsEnabled(false);
@@ -181,15 +181,16 @@ public class Main extends Application{
             return;
         } else if (player.getWager() > player.getMoney()) {
             showMessage("Not enough Money to double");
-            return;
-        } else {
-            player.getHands().get(0).addCard(deck.drawCard());
-            player.loseMoney(player.getWager());
-            player.setWager(player.getWager() * 2);
-            setButtonsEnabled(false);
-            dealerPlay();
+            return;}
+
+        Card card = deck.drawCard();
+        player.getHands().get(0).addCard(card);
+        player.loseMoney(player.getWager());
+        player.setWager(player.getWager() * 2);
+        setButtonsEnabled(false);
+        dealerPlay();
             
-        }
+
         dealCardAnimation(card,playerCardX(player),playerCardY(player, player.getFirstHand().getHand().size() - 1)).play();
 
         int val = player.getFirstHand().getHandVal();
@@ -202,37 +203,141 @@ public class Main extends Application{
     }
     
     private void dealerPlay() {
+        runBots(() -> dealerTurn());
+    }
+
+    private void dealerTurn() {
         showMessage("Dealer's turn...");
         SequentialTransition dealerAnim = new SequentialTransition();
 
         while (dealer.getFirstHand().getHandVal() < 17) {
             Card c = deck.drawCard();
             dealer.getFirstHand().addCard(c);
-            dealerAnim.getChildren().add(dealCardAnimation(c,
+            dealerAnim.getChildren().add(
+                dealCardAnimation(
+                    c,
                     dealerCardX(),
-                    dealerCardY(dealer.getFirstHand().getHand().size() - 1)));
+                    dealerCardY(dealer.getFirstHand().getHand().size() - 1)
+                )
+            );
         }
 
-        dealerAnim.setOnFinished(e -> {
-            int dealerVal = dealer.getFirstHand().getHandVal();
-            int playerVal = players.get(0).getFirstHand().getHandVal();
-            showMessage("Dealer total: " + dealerVal);
-            showMessage("Your total: " + playerVal);
-            if (((dealerVal > 21) || (playerVal > dealerVal)) && playerVal <= 21){
-                showMessage("You win!");
-                Player p=players.get(0);
-                p.addMoney(wager);
-            }
-            else if (dealerVal == playerVal){
-                showMessage("Push.");
-            }
-            else
-                showMessage("Dealer wins.");
-            showMessage("Count: "+deck.getCount());
-        });
-        resetWagerControls();
+        dealerAnim.setOnFinished(e -> resolveRound());
         dealerAnim.play();
     }
+
+    private void resolveRound() {
+        int dealerVal = dealer.getFirstHand().getHandVal();
+        int playerVal = players.get(0).getFirstHand().getHandVal();
+
+        showMessage("Dealer: " + dealerVal + " | You: " + playerVal);
+
+        Player p = players.get(0);
+
+        if ((dealerVal > 21 || playerVal > dealerVal) && playerVal <= 21) {
+            showMessage("You win!");
+            p.addMoney(p.getWager() * 2);
+        } else if (dealerVal == playerVal) {
+            showMessage("Push.");
+            p.addMoney(p.getWager());
+        } else {
+            showMessage("Dealer wins.");
+        }
+
+        showMessage("Count: " + deck.getCount());
+        resetWagerControls();
+    }
+
+    private boolean basicBotStep(Player bot) {
+        Hand h = bot.getFirstHand();
+        int val = h.getHandVal();
+        int dealerUp = dealer.getFirstHand().getHand().get(0).getValue();
+
+        if (val <= 11) return hit(bot);
+        if (val >= 17) return false;
+
+        return !(dealerUp >= 2 && dealerUp <= 6) && hit(bot);
+    }
+
+
+    private void runBots(Runnable afterBots) {
+        SequentialTransition bots = new SequentialTransition();
+
+        for (Player p : players) {
+            if (p.name.equals("BasicBot")) {
+                bots.getChildren().add(botThinkingTurn(
+                    p, "Bot 1 thinking...",
+                    () -> basicBotStep(p)
+                ));
+            }
+            else if (p.name.equals("SmartBot")) {
+                bots.getChildren().add(botThinkingTurn(
+                    p, "Bot 2 counting...",
+                    () -> countingBotStep(p)
+                ));
+            }
+            else if (p.name.equals("CheaterBot")) {
+                bots.getChildren().add(botThinkingTurn(
+                    p, "Bot 3 cheating...",
+                    () -> cheaterBotStep(p)
+                ));
+            }
+        }
+
+        bots.setOnFinished(e -> afterBots.run());
+        bots.play();
+    }
+
+    private boolean countingBotStep(Player bot) {
+        Hand h = bot.getFirstHand();
+        int val = h.getHandVal();
+        int count = deck.getCount();
+
+        if (val <= 11) return hit(bot);
+        if (val >= 17) return false;
+
+        return count < 2 && hit(bot);
+    }
+    private boolean cheaterBotStep(Player bot) {
+        Hand h = bot.getFirstHand();
+        Card next = deck.peekCard();
+
+        return h.getHandVal() + next.getValue() <= 21 && hit(bot);
+    }
+
+    private Animation botThinkingTurn(Player bot, String msg, Supplier<Boolean> step) {
+        SequentialTransition seq = new SequentialTransition();
+
+        PauseTransition announce = new PauseTransition(Duration.seconds(0.6));
+        announce.setOnFinished(e -> showMessage(msg));
+        seq.getChildren().add(announce);
+
+        Timeline act = new Timeline(
+            new KeyFrame(Duration.seconds(0.8), e -> {
+                boolean hitAgain = step.get();
+                if (hitAgain) {
+                    seq.getChildren().add(botThinkingTurn(bot, msg, step));
+                }
+            })
+        );
+
+        seq.getChildren().add(act);
+        return seq;
+    }
+
+    private boolean hit(Player bot) {
+        Card c = deck.drawCard();
+        bot.getFirstHand().addCard(c);
+
+        dealCardAnimation(
+            c,
+            playerCardX(bot),
+            playerCardY(bot, bot.getFirstHand().getHand().size() - 1)
+        ).play();
+
+        return bot.getFirstHand().getHandVal() <= 21;
+    }
+
 
     private void playerStand() {
         showMessage("You stand.");
@@ -244,6 +349,8 @@ public class Main extends Application{
         Player player = players.get(currentPlayer);
         Card card = deck.drawCard();
         player.getCurrHand().addCard(card);
+        player.incrementTurn();
+
 
         dealCardAnimation(card, playerCardX(player), playerCardY(player, player.getFirstHand().getHand().size() - 1)).play();
 
@@ -256,15 +363,6 @@ public class Main extends Application{
             dealerPlay();
         }
     }
-
-    private void nextHand(){
-        if(players.get(currentPlayer).getHands().size()>players.get(currentPlayer).getCurrHandIn()){
-            players.get(currentPlayer).nextHand();
-        }
-    }
-
-
-
 
     //Done - could use tweaks
     private void showMessage(String text) {
@@ -288,15 +386,17 @@ public class Main extends Application{
     private void updateWagerLabel() {
         wagerLabel.setText("$" + wager);
     }
-    //Done - may have to change disables
+    //Done
     private void confirmWager() {
         if(players.get(0).getMoney()>=players.get(0).getWager()){
+            players.get(0).setWager(wager);
+            players.get(0).loseMoney(wager);
             showMessage("Wager confirmed: $" + wager);
             startRound();
         }
         else{
-        showMessage("Not enough money");}
-        
+            showMessage("Not enough money");
+        }
     }
     //Done
     private void resetWagerControls() {

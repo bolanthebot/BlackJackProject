@@ -15,7 +15,7 @@ public class Player {
         this.currHand=0;
         turn =1;
     }
-
+    protected void incrementTurn(){turn++;}
     protected void addMoney(double m){money=money+m;}
     protected void loseMoney(double m){money=money-m;}
     protected double getMoney(){return money;}

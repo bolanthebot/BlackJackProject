@@ -30,6 +30,9 @@ public class Deck {
         updateCount(drawnCard);
         return drawnCard;
     }
+    //peeks at top card
+    //should only be for cheater
+    protected Card peekCard(){return cards.get(size()-1);}
 
     private void updateCount(Card c) {this.count += c.getCount();}
     private void resetCount() {count = 0;}
