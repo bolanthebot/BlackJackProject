@@ -1,5 +1,4 @@
 package src.BlackJackProject;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import javafx.animation.*;
@@ -12,9 +11,6 @@ import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import src.BlackJackProject.Card;
-import src.BlackJackProject.Deck;
-import src.BlackJackProject.Player;
 
 import java.util.*;
 
